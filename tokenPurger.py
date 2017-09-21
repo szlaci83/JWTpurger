@@ -17,7 +17,6 @@ connection = pymysql.connect(host = properties['host'],
                              charset = 'utf8mb4',
                              cursorclass = pymysql.cursors.DictCursor)
 
-
 def fetchExpiredTokens():
     try:
         with connection.cursor() as cursor:
