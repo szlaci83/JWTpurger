@@ -1,6 +1,8 @@
-import base64, jwt, time, json, pymysql.cursors
+import base64, jwt, time, json, pymysql.cursors, logging
+import datetime
 
 properties = json.loads(open('properties.json').read())
+logging.basicConfig(filename='token_purger.log', level=logging.DEBUG)
 
 secret = properties['secret']
 
@@ -29,6 +31,7 @@ def fetchExpiredTokens():
                     tokens.append(row['token'])
         connection.commit()
     except RuntimeError:
+        logging.error('{} - {}'.format(datetime.datetime.today().strftime('%Y-%m-%d'), 'ERROR during fetching expired tokens'))
         pass
     return tokens
 
@@ -39,12 +42,14 @@ def deleteToken(exp_token):
         cursor.execute(sql, (exp_token,))
         connection.commit()
     except RuntimeError:
+        logging.error('{} - {}'.format(datetime.datetime.today().strftime('%Y-%m-%d'), 'ERROR during deleting expired tokens'))
         pass
 
 def purgeAllExpired():
     tokens = fetchExpiredTokens()
     for token in tokens:
         deleteToken(token)
+        logging.info('{} - {}'.format(datetime.datetime.today().strftime('%Y-%m-%d'), 'SUCCESFULLY deleted token:' + str(token)))
     connection.close()
     return str(len(tokens))
 
